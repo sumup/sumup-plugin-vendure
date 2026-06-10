@@ -1,0 +1,1 @@
+export const SUMUP_PLUGIN_OPTIONS = Symbol("SUMUP_PLUGIN_OPTIONS")
