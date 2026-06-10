@@ -1,0 +1,3 @@
+.env
+vendure/node_modules
+vendure/dist

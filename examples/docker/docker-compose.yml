@@ -1,0 +1,58 @@
+name: vendure-sumup-example
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vendure}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vendure}
+      POSTGRES_DB: ${POSTGRES_DB:-vendure}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vendure} -d ${POSTGRES_DB:-vendure}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  vendure:
+    build:
+      context: ../..
+      dockerfile: examples/docker/vendure/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      SHARED_CONFIG_PATH: /shared/config.json
+    ports:
+      - "${VENDURE_SERVER_PORT:-3000}:3000"
+      - "${VENDURE_ADMIN_PORT:-3002}:3002"
+    volumes:
+      - shared:/shared
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/shop-api || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 90s
+
+  storefront:
+    build:
+      context: ./storefront
+    depends_on:
+      - vendure
+    environment:
+      PORT: 8080
+      SHARED_CONFIG_PATH: /shared/config.json
+    ports:
+      - "8080:8080"
+    volumes:
+      - shared:/shared
+
+volumes:
+  pgdata:
+  shared:
