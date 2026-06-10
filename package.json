@@ -2,19 +2,47 @@
   "name": "@sumup/vendure-plugin",
   "version": "0.1.0",
   "description": "SumUp payment plugin for Vendure.",
+  "author": "SumUp <support@sumup.com> (https://sumup.com/)",
   "license": "MIT",
   "type": "commonjs",
+  "homepage": "https://github.com/sumup/sumup/tree/main/sumup-plugin-vendure",
+  "bugs": {
+    "url": "https://github.com/sumup/sumup/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sumup/sumup.git",
+    "directory": "sumup-plugin-vendure"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
   ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "provenance": true,
+    "access": "public"
+  },
   "keywords": [
     "vendure",
     "vendure-plugin",
     "sumup",
-    "payments"
+    "payments",
+    "checkout",
+    "ecommerce"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -22,7 +50,9 @@
     "format:check": "biome format .",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "check": "npm run lint && npm run typecheck && npm run build",
+    "check": "npm run lint && npm run typecheck && npm run build && npm run pack:dry-run",
+    "pack:dry-run": "npm pack --dry-run",
+    "prepublishOnly": "npm run check",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --passWithNoTests"
   },

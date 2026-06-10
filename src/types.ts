@@ -8,6 +8,9 @@ import type { Payment, RequestContext } from "@vendure/core"
 
 export type SumUpCheckoutMode = "hosted" | "widget"
 
+/**
+ * Plugin-level configuration for the SumUp Vendure integration.
+ */
 export type SumUpPluginOptions = {
   apiKey: string
   merchantCode: string
@@ -22,6 +25,9 @@ export type SumUpPluginOptions = {
   client?: SumUpClient
 }
 
+/**
+ * Per-payment-method overrides configured on a Vendure Payment Method.
+ */
 export type SumUpPaymentMethodArgs = {
   merchantCode?: string
   checkoutMode?: SumUpCheckoutMode
@@ -30,6 +36,9 @@ export type SumUpPaymentMethodArgs = {
   paymentDescription?: string
 }
 
+/**
+ * Metadata accepted from storefront checkout flows and persisted on Vendure Payments.
+ */
 export type SumUpPaymentMetadata = {
   checkout_id?: string
   checkout_reference?: string
@@ -53,6 +62,9 @@ export type SumUpPaymentMetadata = {
   [key: string]: unknown
 }
 
+/**
+ * Normalized SumUp metadata stored on successful payment creation and sync operations.
+ */
 export type SumUpStoredMetadata = SumUpPaymentMetadata & {
   checkout_id: string
   checkout_reference: string
@@ -61,6 +73,9 @@ export type SumUpStoredMetadata = SumUpPaymentMetadata & {
   raw_checkout?: Checkout | CheckoutSuccess
 }
 
+/**
+ * Minimal webhook payload shape used by the SumUp webhook controller.
+ */
 export type SumUpWebhookBody = {
   id?: string
   checkout_id?: string
@@ -68,6 +83,9 @@ export type SumUpWebhookBody = {
   merchant_code?: string
 }
 
+/**
+ * Internal abstraction over the SumUp SDK used by the plugin.
+ */
 export type SumUpClient = {
   createCheckout(
     payload: CheckoutCreateRequest,

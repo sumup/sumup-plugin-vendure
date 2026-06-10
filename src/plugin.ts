@@ -10,6 +10,14 @@ import { SumUpService } from "./sumup.service"
 import type { SumUpPluginOptions } from "./types"
 import { assertRequiredOptions } from "./utils"
 
+/**
+ * SumUp payment integration for Vendure.
+ *
+ * Register the plugin with `SumUpPlugin.init(...)` and add the exported
+ * `sumUpPaymentHandler` to `paymentOptions.paymentMethodHandlers`.
+ *
+ * @category Plugin
+ */
 @VendurePlugin({
   imports: [PluginCommonModule],
   controllers: [SumUpController],
@@ -21,11 +29,29 @@ import { assertRequiredOptions } from "./utils"
     },
   ],
   configuration: (config) => config,
+  compatibility: "^3.6.4",
 })
 // biome-ignore lint/complexity/noStaticOnlyClass: Vendure plugins expose configuration through a static init() API.
 export class SumUpPlugin {
+  /** @internal */
   static options: SumUpPluginOptions
 
+  /**
+   * Configures the SumUp plugin for a Vendure server.
+   *
+   * @example
+   * ```ts
+   * plugins: [
+   *   SumUpPlugin.init({
+   *     apiKey: process.env.SUMUP_API_KEY!,
+   *     merchantCode: process.env.SUMUP_MERCHANT_CODE!,
+   *     checkoutMode: "hosted",
+   *     returnUrl: "https://your-vendure.example/payments/sumup/webhook",
+   *     redirectUrl: "https://storefront.example/checkout/sumup/return",
+   *   }),
+   * ]
+   * ```
+   */
   static init(options: SumUpPluginOptions) {
     assertRequiredOptions(options)
     SumUpPlugin.options = {
@@ -37,4 +63,7 @@ export class SumUpPlugin {
   }
 }
 
+/**
+ * The payment method handler to register in `paymentOptions.paymentMethodHandlers`.
+ */
 export const sumUpPaymentHandler = createSumUpPaymentHandler()
