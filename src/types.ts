@@ -10,11 +10,19 @@ export type SumUpCheckoutMode = "hosted" | "widget"
 
 /**
  * Plugin-level configuration for the SumUp Vendure integration.
+ *
+ * `returnUrl` is typically the publicly reachable Vendure callback route
+ * exposed by this plugin at `/payments/sumup/webhook`.
+ *
+ * @category Plugin
  */
 export type SumUpPluginOptions = {
   apiKey: string
   merchantCode: string
   defaultLanguageCode?: string
+  /**
+   * @default "hosted"
+   */
   checkoutMode?: SumUpCheckoutMode
   returnUrl?: string
   redirectUrl?: string
@@ -27,6 +35,8 @@ export type SumUpPluginOptions = {
 
 /**
  * Per-payment-method overrides configured on a Vendure Payment Method.
+ *
+ * @category Plugin
  */
 export type SumUpPaymentMethodArgs = {
   merchantCode?: string

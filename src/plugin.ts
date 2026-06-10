@@ -46,6 +46,7 @@ export class SumUpPlugin {
    *     apiKey: process.env.SUMUP_API_KEY!,
    *     merchantCode: process.env.SUMUP_MERCHANT_CODE!,
    *     checkoutMode: "hosted",
+   *     // Public callback URL for SumUp checkout status updates
    *     returnUrl: "https://your-vendure.example/payments/sumup/webhook",
    *     redirectUrl: "https://storefront.example/checkout/sumup/return",
    *   }),
