@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "SumUp payment plugin for Vendure.",
   "author": "SumUp <support@sumup.com> (https://sumup.com/)",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "type": "commonjs",
   "homepage": "https://github.com/sumup/sumup/tree/main/sumup-plugin-vendure",
   "bugs": {
