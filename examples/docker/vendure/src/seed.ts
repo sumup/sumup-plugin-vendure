@@ -1,12 +1,13 @@
 import "reflect-metadata"
+
 import fs from "node:fs"
 
 import {
   bootstrapWorker,
+  ChannelService,
   CurrencyCode,
   LanguageCode,
   type InitialData,
-  PaymentMethodService,
   Populator,
   ProductService,
   ProductVariantService,
@@ -15,17 +16,19 @@ import {
 
 import { config } from "../vendure-config"
 
+const demoCurrencyCode = (
+  process.env.VENDURE_CURRENCY_CODE || "EUR"
+) as CurrencyCode
+const sharedConfigPath = process.env.SHARED_CONFIG_PATH || "/shared/config.json"
+
 async function seed() {
   const worker = await bootstrapWorker(config)
   const app = worker.app
-  const requestContextService = app.get(RequestContextService)
+  const channelService = app.get(ChannelService)
   const populator = app.get(Populator)
-  const paymentMethodService = app.get(PaymentMethodService)
   const productService = app.get(ProductService)
   const productVariantService = app.get(ProductVariantService)
-  const ctx = await requestContextService.create({
-    apiType: "admin",
-  })
+  const requestContextService = app.get(RequestContextService)
 
   const initialData: InitialData = {
     defaultLanguage: LanguageCode.en,
@@ -83,12 +86,14 @@ async function seed() {
   }
 
   await populator.populateInitialData(initialData)
-
-  const paymentMethods = await paymentMethodService.findAll(ctx)
-  const existingProduct = await productService.findOneBySlug(
-    ctx,
-    "sumup-demo-tshirt"
-  )
+  const ctx = await requestContextService.create({ apiType: "admin" })
+  const defaultChannel = await channelService.getDefaultChannel(ctx)
+  await channelService.update(ctx, {
+    id: defaultChannel.id,
+    defaultCurrencyCode: demoCurrencyCode,
+    availableCurrencyCodes: [demoCurrencyCode],
+  })
+  const existingProduct = await productService.findOneBySlug(ctx, "sumup-demo-tshirt")
 
   let variantId: string | number | undefined
 
@@ -113,7 +118,7 @@ async function seed() {
         stockOnHand: 100,
         prices: [
           {
-            currencyCode: CurrencyCode.EUR,
+            currencyCode: demoCurrencyCode,
             price: 2500,
           },
         ],
@@ -134,17 +139,12 @@ async function seed() {
     variantId = variants.items[0]?.id
   }
 
-  const sharedConfigPath = process.env.SHARED_CONFIG_PATH || "/shared/config.json"
   fs.writeFileSync(
     sharedConfigPath,
     JSON.stringify(
       {
         backendUrl: process.env.VENDURE_PUBLIC_URL || "http://localhost:3000",
-        adminUrl: process.env.VENDURE_ADMIN_URL || "http://localhost:3002/admin",
         productVariantId: variantId,
-        paymentMethodCode: paymentMethods.items.find(
-          (item) => item.code === "sumup"
-        )?.code,
       },
       null,
       2

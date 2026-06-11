@@ -20,9 +20,16 @@ docker compose up --build
 When ready:
 
 - Storefront: <http://localhost:8080>
-- Vendure Shop/Admin API: <http://localhost:3000>
-- Vendure Admin UI: <http://localhost:3002/admin>
+- Vendure Shop API for the storefront: <http://127.0.0.1:3000>
+- Vendure Admin API: <http://localhost:3000/admin-api>
+- Vendure Admin UI: <http://localhost:3000/admin>
 - Superadmin login: `superadmin` / `supersecret` by default
+
+If you change credentials, ports, currency, or public URLs after the first boot, reset the example before starting again:
+
+```bash
+docker compose down -v
+```
 
 ## What gets seeded
 
@@ -31,7 +38,10 @@ On first boot the example app seeds:
 - a `sumup` Payment Method backed by the plugin
 - a default shipping method
 - a demo product variant
-- a shared `config.json` consumed by the storefront
+- a small shared `config.json` consumed by the storefront
+
+The example also syncs the default Vendure channel currency to `VENDURE_CURRENCY_CODE`
+on first boot. This must match the currency accepted by your SumUp merchant account.
 
 ## Hosted checkout flow
 
@@ -59,8 +69,7 @@ http://localhost:3000/payments/sumup/webhook
 
 That URL is not publicly reachable from SumUp. To test webhook delivery, expose the backend with a tunnel and set `VENDURE_PUBLIC_URL` in `.env` to the public URL before rebuilding.
 
-## Reset
+## Notes
 
-```bash
-docker compose down -v
-```
+- Keep `VENDURE_PUBLIC_URL` on `127.0.0.1` if you want the storefront and Admin UI to use separate auth cookies in the browser.
+- If port `8080` is already in use, change `STOREFRONT_PORT` and `STOREFRONT_URL` together.

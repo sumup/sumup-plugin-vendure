@@ -1,11 +1,12 @@
-import path from "node:path"
 import { LanguageCode, type VendureConfig } from "@vendure/core"
 import { AdminUiPlugin } from "@vendure/admin-ui-plugin"
 
 import { SumUpPlugin, sumUpPaymentHandler } from "@sumup/vendure-plugin"
 
 const serverPort = Number(process.env.VENDURE_SERVER_PORT || 3000)
-const adminPort = Number(process.env.VENDURE_ADMIN_PORT || 3002)
+const storefrontUrl = process.env.STOREFRONT_URL || "http://localhost:8080"
+const vendurePublicUrl = process.env.VENDURE_PUBLIC_URL || "http://localhost:3000"
+const vendureAdminUrl = `http://localhost:${serverPort}/admin`
 
 export const config: VendureConfig = {
   apiOptions: {
@@ -13,10 +14,7 @@ export const config: VendureConfig = {
     adminApiPath: "admin-api",
     shopApiPath: "shop-api",
     cors: {
-      origin: [
-        process.env.STOREFRONT_URL || "http://localhost:8080",
-        process.env.VENDURE_ADMIN_URL || "http://localhost:3002",
-      ],
+      origin: [storefrontUrl, vendureAdminUrl],
       credentials: true,
     },
   },
@@ -48,18 +46,15 @@ export const config: VendureConfig = {
       merchantCode: process.env.SUMUP_MERCHANT_CODE || "",
       checkoutMode:
         process.env.SUMUP_CHECKOUT_MODE === "widget" ? "widget" : "hosted",
-      returnUrl: `${process.env.VENDURE_PUBLIC_URL || "http://localhost:3000"}/payments/sumup/webhook`,
-      redirectUrl: `${process.env.STOREFRONT_URL || "http://localhost:8080"}/return`,
+      returnUrl: `${vendurePublicUrl}/payments/sumup/webhook`,
+      redirectUrl: `${storefrontUrl}/return`,
       defaultLanguageCode: LanguageCode.en,
     }),
     AdminUiPlugin.init({
       route: "admin",
-      port: adminPort,
+      port: 3002,
       adminUiConfig: {
         apiPort: serverPort,
-      },
-      app: {
-        path: path.join(__dirname, ".vendure/admin-ui"),
       },
     }),
   ],

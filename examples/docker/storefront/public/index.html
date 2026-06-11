@@ -96,6 +96,14 @@
         return data.data
       }
 
+      function assertSuccessResult(operation, result) {
+        if (result && result.errorCode) {
+          const details = result.transitionError || result.message || ""
+          throw new Error(`${operation}: ${result.errorCode} ${details}`.trim())
+        }
+        return result
+      }
+
       async function loadConfig() {
         for (let attempt = 0; attempt < 90; attempt += 1) {
           const response = await fetch("/config.json")
@@ -114,7 +122,7 @@
 
         log("Loaded config", config)
 
-        await gql(
+        const addItem = await gql(
           apiUrl,
           `mutation AddItem($variantId: ID!, $quantity: Int!) {
             addItemToOrder(productVariantId: $variantId, quantity: $quantity) {
@@ -124,13 +132,20 @@
           }`,
           { variantId, quantity: 1 }
         )
-        log("Added product to order")
+        const addedOrder = assertSuccessResult("addItemToOrder", addItem.addItemToOrder)
+        log("Added product to order", addedOrder)
+        if (addedOrder.code) {
+          localStorage.setItem("vendure-order-code", addedOrder.code)
+        }
 
-        await gql(
+        const customerResult = await gql(
           apiUrl,
           `mutation SetCustomer($input: CreateCustomerInput!) {
             setCustomerForOrder(input: $input) {
               ... on Order { id code }
+              ... on AlreadyLoggedInError { errorCode message }
+              ... on GuestCheckoutError { errorCode message }
+              ... on EmailAddressConflictError { errorCode message }
               ... on ErrorResult { errorCode message }
             }
           }`,
@@ -142,7 +157,10 @@
             }
           }
         )
-        log("Set customer")
+        log(
+          "Set customer",
+          assertSuccessResult("setCustomerForOrder", customerResult.setCustomerForOrder)
+        )
 
         const address = {
           fullName: "SumUp Tester",
@@ -183,7 +201,7 @@
           }`
         )
         const shippingMethodId = eligibleShippingMethods.eligibleShippingMethods[0].id
-        await gql(
+        const shippingResult = await gql(
           apiUrl,
           `mutation SetShippingMethod($shippingMethodId: [ID!]!) {
             setOrderShippingMethod(shippingMethodId: $shippingMethodId) {
@@ -193,7 +211,13 @@
           }`,
           { shippingMethodId: [shippingMethodId] }
         )
-        log("Selected shipping method", eligibleShippingMethods.eligibleShippingMethods[0])
+        log(
+          "Selected shipping method",
+          assertSuccessResult(
+            "setOrderShippingMethod",
+            shippingResult.setOrderShippingMethod
+          )
+        )
 
         const nextStates = await gql(
           apiUrl,
@@ -201,18 +225,46 @@
             nextOrderStates
           }`
         )
+        log("Next order states", nextStates.nextOrderStates)
+        const activeOrder = await gql(
+          apiUrl,
+          `query ActiveOrder {
+            activeOrder {
+              code
+              state
+              customer {
+                id
+                emailAddress
+              }
+              shippingLines {
+                id
+                shippingMethod {
+                  code
+                }
+              }
+            }
+          }`
+        )
+        log("Active order before transition", activeOrder.activeOrder)
         if (nextStates.nextOrderStates.includes("ArrangingPayment")) {
-          await gql(
+          const transitionResult = await gql(
             apiUrl,
             `mutation TransitionOrder($state: String!) {
               transitionOrderToState(state: $state) {
                 ... on Order { id code state }
+                ... on OrderStateTransitionError { errorCode message transitionError fromState toState }
                 ... on ErrorResult { errorCode message }
               }
             }`,
             { state: "ArrangingPayment" }
           )
-          log("Transitioned order to ArrangingPayment")
+          log(
+            "Transitioned order to ArrangingPayment",
+            assertSuccessResult(
+              "transitionOrderToState",
+              transitionResult.transitionOrderToState
+            )
+          )
         }
 
         const payment = await gql(
@@ -232,21 +284,24 @@
           }`,
           {
             input: {
-              method: config.paymentMethodCode || "sumup",
+              method: "sumup",
               metadata: {
-                checkout_mode: "hosted",
                 checkout_reference: `vendure-demo-${Date.now()}`
               }
             }
           }
         )
 
-        log("Created payment", payment.addPaymentToOrder)
-        if (payment.addPaymentToOrder.code) {
-          localStorage.setItem("vendure-order-code", payment.addPaymentToOrder.code)
+        const paymentResult = assertSuccessResult(
+          "addPaymentToOrder",
+          payment.addPaymentToOrder
+        )
+        log("Created payment", paymentResult)
+        if (paymentResult.code) {
+          localStorage.setItem("vendure-order-code", paymentResult.code)
         }
 
-        const order = payment.addPaymentToOrder
+        const order = paymentResult
         const hostedUrl = order.payments?.[0]?.metadata?.public?.hostedCheckoutUrl
         const checkoutId = order.payments?.[0]?.metadata?.public?.checkoutId
         const target = document.getElementById("checkout-result")
