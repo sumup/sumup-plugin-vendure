@@ -76,7 +76,9 @@ Optional handler arguments:
 
 Global defaults can be defined in `SumUpPlugin.init()` and overridden per payment method when needed.
 
-## Storefront flow
+## Usage
+
+### Storefront flow
 
 Once the order is in `ArrangingPayment`, call `addPaymentToOrder` with `method: "sumup"` and any SumUp-specific metadata you need.
 
@@ -169,9 +171,12 @@ The plugin maps SumUp checkout state to Vendure payment state like this:
 - `EXPIRED` -> `Cancelled`
 - anything else -> `Created`
 
-## Notes
+## Integration notes
 
 - The plugin does not add Admin UI extensions.
 - The plugin does not extend Vendure's GraphQL schema. It uses the standard `addPaymentToOrder` payment metadata flow described in Vendure's payment docs.
+
+## Notes
+
 - For local end-to-end testing, see [`examples/docker`](examples/docker).
 - For contributor workflow, release checks, and publishing notes, see [`CONTRIBUTING.md`](./CONTRIBUTING.md).
