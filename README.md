@@ -3,6 +3,11 @@
 # @sumup/vendure-plugin
 
 [![NPM Version](https://img.shields.io/npm/v/%40sumup%2Fvendure-plugin.svg)](https://www.npmjs.org/package/@sumup/vendure-plugin)
+[![CI](https://github.com/sumup/sumup-plugin-vendure/actions/workflows/ci.yml/badge.svg)](https://github.com/sumup/sumup-plugin-vendure/actions/workflows/ci.yml)
+[![Downloads](https://img.shields.io/npm/dm/%40sumup%2Fvendure-plugin.svg)](https://www.npmjs.com/package/@sumup/vendure-plugin)
+[![License](https://img.shields.io/npm/l/%40sumup%2Fvendure-plugin.svg)](./LICENSE)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Vendure](https://img.shields.io/badge/Vendure-%5E3.6.4-2F6FED)](https://www.npmjs.com/package/@vendure/core)
 
 </div>
 
