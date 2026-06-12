@@ -1,0 +1,63 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+    groups:
+      runtime:
+        patterns:
+          - "@sumup/sdk"
+      vendure:
+        patterns:
+          - "@vendure/core"
+      linting:
+        patterns:
+          - "@biomejs/*"
+      types:
+        patterns:
+          - "@types/*"
+      test-and-build:
+        patterns:
+          - "typescript"
+          - "vitest"
+
+  - package-ecosystem: "npm"
+    directory: "/examples/docker/vendure"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "monthly"
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+    groups:
+      vendure-example:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 5
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore"
+    labels:
+      - "dependencies"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
