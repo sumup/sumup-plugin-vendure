@@ -12,7 +12,7 @@
     "@sumup/sdk": "0.1.6",
     "@vendure/admin-ui-plugin": "3.6.4",
     "@vendure/core": "3.6.4",
-    "pg": "8.16.3",
+    "pg": "8.21.0",
     "reflect-metadata": "0.2.2",
     "ts-node": "10.9.2",
     "typescript": "6.0.3"
