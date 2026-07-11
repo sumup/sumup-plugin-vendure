@@ -22,7 +22,7 @@ The plugin never handles raw card data inside your Vendure server.
 
 Compatible with Vendure `^3.6.4`.
 
-## What it provides
+## What It Provides
 
 - a Vendure plugin: `SumUpPlugin`
 - a payment handler: `sumUpPaymentHandler`
@@ -36,7 +36,7 @@ The webhook endpoint is notification-only. When SumUp calls it, the plugin re-fe
 npm install @sumup/vendure-plugin
 ```
 
-## Vendure configuration
+## Vendure Configuration
 
 Register the plugin and payment handler in your Vendure config:
 
@@ -83,7 +83,7 @@ Global defaults can be defined in `SumUpPlugin.init()` and overridden per paymen
 
 ## Usage
 
-### Storefront flow
+### Storefront Flow
 
 Once the order is in `ArrangingPayment`, call `addPaymentToOrder` with `method: "sumup"` and any SumUp-specific metadata you need.
 
@@ -126,7 +126,7 @@ After `addPaymentToOrder`, redirect the shopper to:
 payments[].metadata.public.hostedCheckoutUrl
 ```
 
-### Widget-oriented flow
+### Widget-Oriented Flow
 
 Use `checkout_mode: "widget"` if your storefront will mount SumUp's checkout UI itself.
 
@@ -138,7 +138,7 @@ payments[].metadata.public.checkoutId
 
 Use that `checkoutId` in your storefront's SumUp client integration. The plugin still treats the webhook callback or a later checkout lookup as the source of truth for final payment state.
 
-## Public payment metadata
+## Public Payment Metadata
 
 The plugin exposes these fields in `payments[].metadata.public`:
 
@@ -150,7 +150,7 @@ The plugin exposes these fields in `payments[].metadata.public`:
 | `hostedCheckoutUrl` | Hosted Checkout URL when SumUp returns one |
 | `redirectUrl` | Redirect URL associated with the checkout |
 
-## Configuration options
+## Configuration Options
 
 | Option | Required | Description |
 | --- | --- | --- |
@@ -166,7 +166,7 @@ The plugin exposes these fields in `payments[].metadata.public`:
 | `supportedCurrencies` | No | Override the built-in supported currency allowlist. |
 | `client` | No | Inject a custom SumUp client implementation. Useful for tests. |
 
-## Payment state mapping
+## Payment State Mapping
 
 The plugin maps SumUp checkout state to Vendure payment state like this:
 
@@ -176,7 +176,7 @@ The plugin maps SumUp checkout state to Vendure payment state like this:
 - `EXPIRED` -> `Cancelled`
 - anything else -> `Created`
 
-## Integration notes
+## Integration Notes
 
 - The plugin does not add Admin UI extensions.
 - The plugin does not extend Vendure's GraphQL schema. It uses the standard `addPaymentToOrder` payment metadata flow described in Vendure's payment docs.
