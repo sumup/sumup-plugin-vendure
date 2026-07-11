@@ -250,7 +250,7 @@ export function mapCheckoutToPaymentState(
   }
   switch (checkout.status) {
     case "PENDING":
-      return "Authorized"
+      return "Created"
     case "FAILED":
       return "Declined"
     case "EXPIRED":

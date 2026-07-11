@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@sumup/sdk": "0.1.6",
+    "@sumup/sdk": "0.1.7",
     "@vendure/admin-ui-plugin": "3.6.4",
     "@vendure/core": "3.6.4",
     "pg": "8.22.0",

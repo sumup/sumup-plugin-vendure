@@ -1,11 +1,21 @@
 import { CurrencyCode } from "@vendure/core"
 import { describe, expect, it } from "vitest"
 
-import { buildCheckoutPayload, toMajorUnitNumber } from "../src/utils"
+import {
+  buildCheckoutPayload,
+  mapCheckoutToPaymentState,
+  toMajorUnitNumber,
+} from "../src/utils"
 
 const pluginOptions = {
   apiKey: "test-api-key",
   merchantCode: "test-merchant",
+}
+
+function checkoutWithStatus(
+  status: string
+): Parameters<typeof mapCheckoutToPaymentState>[0] {
+  return { status } as Parameters<typeof mapCheckoutToPaymentState>[0]
 }
 
 describe("toMajorUnitNumber", () => {
@@ -37,5 +47,31 @@ describe("buildCheckoutPayload", () => {
       currency: "EUR",
       merchant_code: "test-merchant",
     })
+  })
+})
+
+describe("mapCheckoutToPaymentState", () => {
+  it("keeps unpaid pending checkouts in Created state", () => {
+    expect(mapCheckoutToPaymentState(checkoutWithStatus("PENDING"))).toBe(
+      "Created"
+    )
+  })
+
+  it("maps paid checkouts to Settled", () => {
+    expect(mapCheckoutToPaymentState(checkoutWithStatus("PAID"))).toBe(
+      "Settled"
+    )
+  })
+
+  it("maps failed checkouts to Declined", () => {
+    expect(mapCheckoutToPaymentState(checkoutWithStatus("FAILED"))).toBe(
+      "Declined"
+    )
+  })
+
+  it("maps expired checkouts to Cancelled", () => {
+    expect(mapCheckoutToPaymentState(checkoutWithStatus("EXPIRED"))).toBe(
+      "Cancelled"
+    )
   })
 })
