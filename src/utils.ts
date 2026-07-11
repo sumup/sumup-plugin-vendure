@@ -162,7 +162,11 @@ export function buildCheckoutPayload(input: {
 }
 
 export function toMajorUnitNumber(amount: number | string): number {
-  return typeof amount === "number" ? amount : Number(amount)
+  const minorUnits = Number(amount)
+  if (!Number.isFinite(minorUnits)) {
+    throw new Error(`Invalid money amount: ${amount}`)
+  }
+  return Math.round(minorUnits) / 100
 }
 
 export function getSuccessfulTransaction(
