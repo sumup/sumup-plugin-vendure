@@ -12,6 +12,7 @@ import {
   ProductService,
   ProductVariantService,
   RequestContextService,
+  ShippingMethodService,
 } from "@vendure/core"
 
 import { config } from "../vendure-config"
@@ -20,6 +21,9 @@ const demoCurrencyCode = (
   process.env.VENDURE_CURRENCY_CODE || "EUR"
 ) as CurrencyCode
 const sharedConfigPath = process.env.SHARED_CONFIG_PATH || "/shared/config.json"
+const demoProductName = "SumUp Solo Lite"
+const demoVariantPrice = 840
+const demoDisplayPrice = 1000
 
 async function seed() {
   const worker = await bootstrapWorker(config)
@@ -29,6 +33,7 @@ async function seed() {
   const productService = app.get(ProductService)
   const productVariantService = app.get(ProductVariantService)
   const requestContextService = app.get(RequestContextService)
+  const shippingMethodService = app.get(ShippingMethodService)
 
   const initialData: InitialData = {
     defaultLanguage: LanguageCode.en,
@@ -49,7 +54,7 @@ async function seed() {
     shippingMethods: [
       {
         name: "Standard Shipping",
-        price: 500,
+        price: 0,
         taxRate: 19,
       },
     ],
@@ -103,7 +108,7 @@ async function seed() {
       translations: [
         {
           languageCode: LanguageCode.en,
-          name: "SumUp Demo T-Shirt",
+          name: demoProductName,
           slug: "sumup-demo-tshirt",
           description:
             "A demo product used to test the SumUp payment flow in Vendure.",
@@ -119,7 +124,7 @@ async function seed() {
         prices: [
           {
             currencyCode: demoCurrencyCode,
-            price: 2500,
+            price: demoVariantPrice,
           },
         ],
         translations: [
@@ -139,11 +144,48 @@ async function seed() {
     variantId = variants.items[0]?.id
   }
 
+  if (variantId) {
+    await productVariantService.createOrUpdateProductVariantPrice(
+      ctx,
+      variantId,
+      demoVariantPrice,
+      defaultChannel.id,
+      demoCurrencyCode
+    )
+  }
+
+  const shippingMethods = await shippingMethodService.findAll(ctx)
+  await Promise.all(
+    shippingMethods.items.map((method) =>
+      shippingMethodService.update(ctx, {
+        id: method.id,
+        calculator: {
+          code: "default-shipping-calculator",
+          arguments: [
+            { name: "rate", value: "0" },
+            { name: "taxRate", value: "19" },
+            { name: "includesTax", value: "auto" },
+          ],
+        },
+        translations: [
+          {
+            languageCode: LanguageCode.en,
+            name: method.name,
+            description: method.description,
+          },
+        ],
+      })
+    )
+  )
+
   fs.writeFileSync(
     sharedConfigPath,
     JSON.stringify(
       {
         backendUrl: process.env.VENDURE_PUBLIC_URL || "http://localhost:3000",
+        currencyCode: demoCurrencyCode,
+        productName: demoProductName,
+        productPrice: demoDisplayPrice,
         productVariantId: variantId,
       },
       null,

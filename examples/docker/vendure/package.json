@@ -5,6 +5,7 @@
   "description": "Local Vendure app for testing @sumup/vendure-plugin from source.",
   "scripts": {
     "seed": "ts-node --project tsconfig.json src/seed.ts",
+    "sync-demo": "ts-node --project tsconfig.json src/sync-demo.ts",
     "start": "ts-node --project tsconfig.json src/index.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

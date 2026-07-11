@@ -16,6 +16,7 @@ export const config: VendureConfig = {
     cors: {
       origin: [storefrontUrl, vendureAdminUrl],
       credentials: true,
+      exposedHeaders: ["vendure-auth-token"],
     },
   },
   authOptions: {

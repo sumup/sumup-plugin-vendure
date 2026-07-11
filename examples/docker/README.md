@@ -8,7 +8,7 @@ A local playground for `@sumup/vendure-plugin`. It runs:
 
 The Vendure app builds this plugin from the local source tree and links it into the example app without publishing to npm.
 
-## Quick start
+## Quick Start
 
 ```bash
 cd examples/docker
@@ -31,7 +31,7 @@ If you change credentials, ports, currency, or public URLs after the first boot,
 docker compose down -v
 ```
 
-## What gets seeded
+## What Gets Seeded
 
 On first boot the example app seeds:
 
@@ -43,7 +43,7 @@ On first boot the example app seeds:
 The example also syncs the default Vendure channel currency to `VENDURE_CURRENCY_CODE`
 on first boot. This must match the currency accepted by your SumUp merchant account.
 
-## Hosted checkout flow
+## Hosted Checkout Flow
 
 The storefront:
 
@@ -55,7 +55,7 @@ The storefront:
 6. calls `addPaymentToOrder` with the `sumup` payment method
 7. redirects to `payments[].metadata.public.hostedCheckoutUrl`
 
-## Widget mode
+## Widget Mode
 
 Set `SUMUP_CHECKOUT_MODE=widget` in `.env` and rebuild. The storefront will show the `checkoutId` returned by the plugin instead of a hosted redirect URL.
 

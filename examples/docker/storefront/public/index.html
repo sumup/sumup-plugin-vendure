@@ -1,146 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SumUp x Vendure</title>
-    <style>
-      * { box-sizing: border-box; }
-      body {
-        font-family: system-ui, sans-serif;
-        max-width: 760px;
-        margin: 0 auto;
-        padding: 2rem 1rem 4rem;
-        line-height: 1.5;
-      }
-      .card {
-        border: 1px solid #d0d7de;
-        border-radius: 12px;
-        padding: 1rem 1.25rem;
-        margin: 1rem 0;
-      }
-      button, a.button {
-        display: inline-block;
-        background: #2563eb;
-        color: white;
-        border: 0;
-        border-radius: 10px;
-        padding: 0.75rem 1.2rem;
-        text-decoration: none;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      pre {
-        background: #f6f8fa;
-        border-radius: 10px;
-        padding: 1rem;
-        overflow: auto;
-        white-space: pre-wrap;
-      }
-      .muted { color: #57606a; }
-      #return-page { display: none; }
-      #return-page.visible, #checkout-page.visible { display: block; }
-      #checkout-page { display: none; }
-    </style>
-  </head>
-  <body>
-    <div id="checkout-page" class="visible">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SumUp x Vendure</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, sans-serif;
+      color: #000;
+      background: #fff;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2.5rem 1rem;
+      line-height: 1.5;
+    }
+
+    main {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      line-height: 1.2;
+    }
+
+    header {
+      text-align: center;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #000;
+      border-radius: 8px;
+      margin: 0 auto;
+      max-width: 420px;
+      padding: 1.25rem;
+    }
+
+    .product-image {
+      display: block;
+      width: 100%;
+      max-height: 320px;
+      object-fit: cover;
+      object-position: center;
+      margin: 0 0 1.25rem;
+      border: 1px solid #000;
+      background: #fff;
+    }
+
+    .price {
+      margin: 0.75rem 0 1rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    button,
+    a.button {
+      display: inline-block;
+      background: #000;
+      color: #fff;
+      border: 1px solid #000;
+      padding: 0.75rem 1rem;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+    }
+
+    a.button {
+      width: 100%;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
+    .status {
+      margin-top: 1rem;
+      min-height: 1.5rem;
+    }
+
+    .muted {
+      color: #555;
+    }
+
+    #return-page {
+      display: none;
+    }
+
+    #return-page.visible,
+    #checkout-page.visible {
+      display: block;
+    }
+
+    #checkout-page {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <main id="checkout-page" class="visible">
+    <header>
       <h1>SumUp x Vendure</h1>
-      <p class="muted">Demo storefront for the local Vendure + SumUp plugin setup.</p>
-      <div class="card">
-        <button id="checkout-button" disabled>Start SumUp checkout</button>
-        <div id="checkout-result" style="margin-top: 1rem;"></div>
-      </div>
-      <div class="card">
-        <strong>Log</strong>
-        <pre id="log">Booting…</pre>
-      </div>
+      <p class="muted">Local checkout demo</p>
+    </header>
+    <div class="card">
+      <img class="product-image" src="/solo-lite.png" alt="SumUp Solo Lite card reader" />
+      <h2 id="product-name">Demo item</h2>
+      <p class="muted">Card reader demo product. Shipping included.</p>
+      <div class="price" id="product-price">€10.00</div>
+      <button id="checkout-button" disabled>Buy</button>
+      <div id="checkout-result" class="status muted"></div>
     </div>
+  </main>
 
-    <div id="return-page">
-      <h1>Checkout return</h1>
-      <div class="card" id="return-result">Checking order state…</div>
-      <div class="card">
-        <strong>Log</strong>
-        <pre id="return-log">Loading…</pre>
-      </div>
-    </div>
+  <main id="return-page">
+    <h1>Checkout return</h1>
+    <div class="card" id="return-result">Checking order state…</div>
+  </main>
 
-    <script>
-      const log = (message, payload) => {
-        const node = document.getElementById("log")
-        const next = payload ? `${message} ${JSON.stringify(payload, null, 2)}` : message
-        node.textContent = (node.textContent === "Booting…" ? "" : `${node.textContent}\n`) + next
+  <script>
+    const log = (message, payload) => {
+      if (payload === undefined) {
+        console.log(message)
+        return
       }
+      console.log(message, payload)
+    }
 
-      const returnLog = (message, payload) => {
-        const node = document.getElementById("return-log")
-        const next = payload ? `${message} ${JSON.stringify(payload, null, 2)}` : message
-        node.textContent = (node.textContent === "Loading…" ? "" : `${node.textContent}\n`) + next
+    async function gql(url, query, variables, token) {
+      const sessionTokenKey = `vendure-auth-token:${new URL(url).origin}`
+      const sessionToken = token || localStorage.getItem(sessionTokenKey)
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(sessionToken ? {authorization: `Bearer ${sessionToken}`} : {}),
+        },
+        body: JSON.stringify({query, variables}),
+        credentials: "include",
+      })
+      const nextSessionToken = response.headers.get("vendure-auth-token")
+      if (nextSessionToken) {
+        localStorage.setItem(sessionTokenKey, nextSessionToken)
       }
+      const data = await response.json()
+      if (!response.ok || data.errors) {
+        throw new Error(JSON.stringify(data.errors || data))
+      }
+      return data.data
+    }
 
-      async function gql(url, query, variables, token) {
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            ...(token ? { authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ query, variables }),
-          credentials: "include",
-        })
-        const data = await response.json()
-        if (!response.ok || data.errors) {
-          throw new Error(JSON.stringify(data.errors || data))
+    function assertSuccessResult(operation, result) {
+      if (result && result.errorCode) {
+        const details = result.transitionError || result.message || ""
+        throw new Error(`${operation}: ${result.errorCode} ${details}`.trim())
+      }
+      return result
+    }
+
+    async function loadConfig() {
+      for (let attempt = 0; attempt < 90; attempt += 1) {
+        const response = await fetch("/config.json")
+        if (response.ok) {
+          return response.json()
         }
-        return data.data
+        await new Promise((resolve) => setTimeout(resolve, 1000))
       }
+      throw new Error("Timed out waiting for shared config")
+    }
 
-      function assertSuccessResult(operation, result) {
-        if (result && result.errorCode) {
-          const details = result.transitionError || result.message || ""
-          throw new Error(`${operation}: ${result.errorCode} ${details}`.trim())
-        }
-        return result
-      }
+    async function runCheckout() {
+      const config = await loadConfig()
+      const apiUrl = `${config.backendUrl}/shop-api`
+      const variantId = config.productVariantId
+      const button = document.getElementById("checkout-button")
+      const target = document.getElementById("checkout-result")
 
-      async function loadConfig() {
-        for (let attempt = 0; attempt < 90; attempt += 1) {
-          const response = await fetch("/config.json")
-          if (response.ok) {
-            return response.json()
-          }
-          await new Promise((resolve) => setTimeout(resolve, 1000))
-        }
-        throw new Error("Timed out waiting for shared config")
-      }
+      button.disabled = true
+      target.textContent = "Preparing checkout..."
+      log("Loaded config", config)
 
-      async function runCheckout() {
-        const config = await loadConfig()
-        const apiUrl = `${config.backendUrl}/shop-api`
-        const variantId = config.productVariantId
-
-        log("Loaded config", config)
-
-        const addItem = await gql(
-          apiUrl,
-          `mutation AddItem($variantId: ID!, $quantity: Int!) {
+      const addItem = await gql(
+        apiUrl,
+        `mutation AddItem($variantId: ID!, $quantity: Int!) {
             addItemToOrder(productVariantId: $variantId, quantity: $quantity) {
               ... on Order { id code state totalWithTax }
               ... on ErrorResult { errorCode message }
             }
           }`,
-          { variantId, quantity: 1 }
-        )
-        const addedOrder = assertSuccessResult("addItemToOrder", addItem.addItemToOrder)
-        log("Added product to order", addedOrder)
-        if (addedOrder.code) {
-          localStorage.setItem("vendure-order-code", addedOrder.code)
-        }
+        {variantId, quantity: 1}
+      )
+      const addedOrder = assertSuccessResult("addItemToOrder", addItem.addItemToOrder)
+      log("Added product to order", addedOrder)
+      if (addedOrder.code) {
+        localStorage.setItem("vendure-order-code", addedOrder.code)
+      }
 
-        const customerResult = await gql(
-          apiUrl,
-          `mutation SetCustomer($input: CreateCustomerInput!) {
+      const customerResult = await gql(
+        apiUrl,
+        `mutation SetCustomer($input: CreateCustomerInput!) {
             setCustomerForOrder(input: $input) {
               ... on Order { id code }
               ... on AlreadyLoggedInError { errorCode message }
@@ -149,86 +226,86 @@
               ... on ErrorResult { errorCode message }
             }
           }`,
-          {
-            input: {
-              emailAddress: "sumup@example.com",
-              firstName: "SumUp",
-              lastName: "Tester"
-            }
+        {
+          input: {
+            emailAddress: "sumup@example.com",
+            firstName: "SumUp",
+            lastName: "Tester"
           }
-        )
-        log(
-          "Set customer",
-          assertSuccessResult("setCustomerForOrder", customerResult.setCustomerForOrder)
-        )
-
-        const address = {
-          fullName: "SumUp Tester",
-          streetLine1: "Example Street 1",
-          city: "Berlin",
-          postalCode: "10115",
-          countryCode: "DE"
         }
+      )
+      log(
+        "Set customer",
+        assertSuccessResult("setCustomerForOrder", customerResult.setCustomerForOrder)
+      )
 
-        await gql(
-          apiUrl,
-          `mutation SetShippingAddress($input: CreateAddressInput!) {
+      const address = {
+        fullName: "SumUp Tester",
+        streetLine1: "Example Street 1",
+        city: "Berlin",
+        postalCode: "10115",
+        countryCode: "DE"
+      }
+
+      await gql(
+        apiUrl,
+        `mutation SetShippingAddress($input: CreateAddressInput!) {
             setOrderShippingAddress(input: $input) {
               ... on Order { id code }
             }
           }`,
-          { input: address }
-        )
-        await gql(
-          apiUrl,
-          `mutation SetBillingAddress($input: CreateAddressInput!) {
+        {input: address}
+      )
+      await gql(
+        apiUrl,
+        `mutation SetBillingAddress($input: CreateAddressInput!) {
             setOrderBillingAddress(input: $input) {
               ... on Order { id code }
             }
           }`,
-          { input: address }
-        )
-        log("Set addresses")
+        {input: address}
+      )
+      log("Set addresses")
 
-        const eligibleShippingMethods = await gql(
-          apiUrl,
-          `query ShippingMethods {
+      const eligibleShippingMethods = await gql(
+        apiUrl,
+        `query ShippingMethods {
             eligibleShippingMethods {
               id
               code
               name
             }
           }`
-        )
-        const shippingMethodId = eligibleShippingMethods.eligibleShippingMethods[0].id
-        const shippingResult = await gql(
-          apiUrl,
-          `mutation SetShippingMethod($shippingMethodId: [ID!]!) {
+      )
+      const shippingMethodId = eligibleShippingMethods.eligibleShippingMethods[0].id
+      const shippingResult = await gql(
+        apiUrl,
+        `mutation SetShippingMethod($shippingMethodId: [ID!]!) {
             setOrderShippingMethod(shippingMethodId: $shippingMethodId) {
               ... on Order { id code state }
               ... on ErrorResult { errorCode message }
             }
           }`,
-          { shippingMethodId: [shippingMethodId] }
+        {shippingMethodId: [shippingMethodId]}
+      )
+      log(
+        "Selected shipping method",
+        assertSuccessResult(
+          "setOrderShippingMethod",
+          shippingResult.setOrderShippingMethod
         )
-        log(
-          "Selected shipping method",
-          assertSuccessResult(
-            "setOrderShippingMethod",
-            shippingResult.setOrderShippingMethod
-          )
-        )
+      )
 
-        const nextStates = await gql(
-          apiUrl,
-          `query NextStates {
+      const nextStates = await gql(
+        apiUrl,
+        `query NextStates {
             nextOrderStates
           }`
-        )
-        log("Next order states", nextStates.nextOrderStates)
-        const activeOrder = await gql(
-          apiUrl,
-          `query ActiveOrder {
+      )
+      log("Next order states", nextStates.nextOrderStates)
+      const activeOrder = await gql(
+        apiUrl,
+        `query ActiveOrder {
             activeOrder {
               code
               state
@@ -244,32 +321,32 @@
               }
             }
           }`
-        )
-        log("Active order before transition", activeOrder.activeOrder)
-        if (nextStates.nextOrderStates.includes("ArrangingPayment")) {
-          const transitionResult = await gql(
-            apiUrl,
-            `mutation TransitionOrder($state: String!) {
+      )
+      log("Active order before transition", activeOrder.activeOrder)
+      if (nextStates.nextOrderStates.includes("ArrangingPayment")) {
+        const transitionResult = await gql(
+          apiUrl,
+          `mutation TransitionOrder($state: String!) {
               transitionOrderToState(state: $state) {
                 ... on Order { id code state }
                 ... on OrderStateTransitionError { errorCode message transitionError fromState toState }
                 ... on ErrorResult { errorCode message }
               }
             }`,
-            { state: "ArrangingPayment" }
+          {state: "ArrangingPayment"}
+        )
+        log(
+          "Transitioned order to ArrangingPayment",
+          assertSuccessResult(
+            "transitionOrderToState",
+            transitionResult.transitionOrderToState
           )
-          log(
-            "Transitioned order to ArrangingPayment",
-            assertSuccessResult(
-              "transitionOrderToState",
-              transitionResult.transitionOrderToState
-            )
-          )
-        }
+        )
+      }
 
-        const payment = await gql(
-          apiUrl,
-          `mutation AddPayment($input: PaymentInput!) {
+      const payment = await gql(
+        apiUrl,
+        `mutation AddPayment($input: PaymentInput!) {
             addPaymentToOrder(input: $input) {
               ... on Order {
                 code
@@ -282,50 +359,50 @@
               ... on ErrorResult { errorCode message }
             }
           }`,
-          {
-            input: {
-              method: "sumup",
-              metadata: {
-                checkout_reference: `vendure-demo-${Date.now()}`
-              }
+        {
+          input: {
+            method: "sumup",
+            metadata: {
+              checkout_reference: `vendure-demo-${Date.now()}`
             }
           }
-        )
-
-        const paymentResult = assertSuccessResult(
-          "addPaymentToOrder",
-          payment.addPaymentToOrder
-        )
-        log("Created payment", paymentResult)
-        if (paymentResult.code) {
-          localStorage.setItem("vendure-order-code", paymentResult.code)
         }
+      )
 
-        const order = paymentResult
-        const hostedUrl = order.payments?.[0]?.metadata?.public?.hostedCheckoutUrl
-        const checkoutId = order.payments?.[0]?.metadata?.public?.checkoutId
-        const target = document.getElementById("checkout-result")
-
-        if (hostedUrl) {
-          target.innerHTML = `<a class="button" href="${hostedUrl}">Pay with SumUp</a>`
-          log("Hosted checkout URL ready", { hostedUrl })
-          return
-        }
-
-        target.innerHTML = `<strong>Widget checkout id:</strong> <code>${checkoutId || "not returned"}</code>`
+      const paymentResult = assertSuccessResult(
+        "addPaymentToOrder",
+        payment.addPaymentToOrder
+      )
+      log("Created payment", paymentResult)
+      if (paymentResult.code) {
+        localStorage.setItem("vendure-order-code", paymentResult.code)
       }
 
-      async function loadReturnPage() {
-        const config = await loadConfig()
-        const code = localStorage.getItem("vendure-order-code")
-        if (!code) {
-          document.getElementById("return-result").textContent = "No stored order code found."
-          return
-        }
+      const order = paymentResult
+      const hostedUrl = order.payments?.[0]?.metadata?.public?.hostedCheckoutUrl
+      const checkoutId = order.payments?.[0]?.metadata?.public?.checkoutId
 
-        const data = await gql(
-          `${config.backendUrl}/shop-api`,
-          `query OrderByCode($code: String!) {
+      if (hostedUrl) {
+        target.innerHTML = `<a class="button" href="${hostedUrl}">Pay with SumUp</a>`
+        log("Hosted checkout URL ready", {hostedUrl})
+        return
+      }
+
+      target.innerHTML = `<strong>Widget checkout id:</strong> <code>${checkoutId || "not returned"}</code>`
+      button.disabled = false
+    }
+
+    async function loadReturnPage() {
+      const config = await loadConfig()
+      const code = localStorage.getItem("vendure-order-code")
+      if (!code) {
+        document.getElementById("return-result").textContent = "No stored order code found."
+        return
+      }
+
+      const data = await gql(
+        `${config.backendUrl}/shop-api`,
+        `query OrderByCode($code: String!) {
             orderByCode(code: $code) {
               code
               state
@@ -335,39 +412,58 @@
               }
             }
           }`,
-          { code }
-        )
+        {code}
+      )
 
-        returnLog("Loaded order", data.orderByCode)
-        document.getElementById("return-result").textContent =
-          `Order ${data.orderByCode?.code || code} is currently ${data.orderByCode?.state || "unknown"}.`
-      }
+      log("Loaded order", data.orderByCode)
+      document.getElementById("return-result").textContent =
+        `Order ${data.orderByCode?.code || code} is currently ${data.orderByCode?.state || "unknown"}.`
+    }
 
-      const isReturn = window.location.pathname === "/return"
-      if (isReturn) {
-        document.getElementById("checkout-page").classList.remove("visible")
-        document.getElementById("return-page").classList.add("visible")
-        loadReturnPage().catch((error) => {
-          document.getElementById("return-result").textContent = error.message
-          returnLog("Return flow failed", { message: error.message })
-        })
-      } else {
-        loadConfig()
-          .then((config) => {
-            log("Config ready", config)
-            document.getElementById("checkout-button").disabled = false
-            document.getElementById("checkout-button").addEventListener("click", () => {
-              runCheckout().catch((error) => {
-                document.getElementById("checkout-result").textContent = error.message
-                log("Checkout failed", { message: error.message })
-              })
+    function formatMoney(amount, currencyCode) {
+      return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency: currencyCode || "EUR",
+      }).format((amount || 0) / 100)
+    }
+
+    function renderProduct(config) {
+      document.getElementById("product-name").textContent =
+        config.productName || "Demo item"
+      document.getElementById("product-price").textContent = formatMoney(
+        config.productPrice || 1000,
+        config.currencyCode || "EUR"
+      )
+    }
+
+    const isReturn = window.location.pathname === "/return"
+    if (isReturn) {
+      document.getElementById("checkout-page").classList.remove("visible")
+      document.getElementById("return-page").classList.add("visible")
+      loadReturnPage().catch((error) => {
+        document.getElementById("return-result").textContent = error.message
+        console.error("Return flow failed", error)
+      })
+    } else {
+      loadConfig()
+        .then((config) => {
+          renderProduct(config)
+          log("Config ready", config)
+          document.getElementById("checkout-button").disabled = false
+          document.getElementById("checkout-button").addEventListener("click", () => {
+            runCheckout().catch((error) => {
+              document.getElementById("checkout-button").disabled = false
+              document.getElementById("checkout-result").textContent = error.message
+              console.error("Checkout failed", error)
             })
           })
-          .catch((error) => {
-            document.getElementById("checkout-result").textContent = error.message
-            log("Failed to load config", { message: error.message })
-          })
-      }
-    </script>
-  </body>
+        })
+        .catch((error) => {
+          document.getElementById("checkout-result").textContent = error.message
+          console.error("Failed to load config", error)
+        })
+    }
+  </script>
+</body>
+
 </html>
