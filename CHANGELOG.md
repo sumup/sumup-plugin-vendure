@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/sumup/sumup-plugin-vendure/compare/v0.2.0...v0.3.0) (2026-07-11)
+
+
+### Features
+
+* update demo website setup ([8519c88](https://github.com/sumup/sumup-plugin-vendure/commit/8519c885dc730efef272688bb83fc6059ca62241))
+
+
+### Bug Fixes
+
+* keep pending SumUp checkouts unconfirmed ([ffb555b](https://github.com/sumup/sumup-plugin-vendure/commit/ffb555b0ef420c0ef2d85faaf1ccb6fb1b5c70fd))
+
 ## [0.2.0](https://github.com/sumup/sumup-plugin-vendure/compare/v0.1.0...v0.2.0) (2026-07-11)
 
 
