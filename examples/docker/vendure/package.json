@@ -10,10 +10,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@sumup/sdk": "0.1.8",
+    "@sumup/sdk": "0.1.9",
     "@vendure/admin-ui-plugin": "3.7.2",
     "@vendure/core": "3.7.2",
-    "pg": "8.22.0",
+    "pg": "8.23.0",
     "reflect-metadata": "0.2.2",
     "ts-node": "10.9.2",
     "typescript": "7.0.2"
