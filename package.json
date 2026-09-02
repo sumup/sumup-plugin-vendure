@@ -57,7 +57,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@sumup/sdk": "0.1.8"
+    "@sumup/sdk": "0.1.9"
   },
   "peerDependencies": {
     "@vendure/core": "^3.6.4"
