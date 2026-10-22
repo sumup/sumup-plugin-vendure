@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24-bookworm AS plugin
+FROM node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a AS plugin
 WORKDIR /plugin
 
 COPY package.json package-lock.json tsconfig.json biome.json README.md CHANGELOG.md LICENSE ./
@@ -9,13 +9,13 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 COPY src ./src
 RUN npm run build
 
-FROM node:24-bookworm AS deps
+FROM node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a AS deps
 WORKDIR /app
 
 COPY examples/docker/vendure/package.json examples/docker/vendure/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
-FROM node:24-bookworm
+FROM node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a
 WORKDIR /app
 ENV NODE_ENV=development
 
