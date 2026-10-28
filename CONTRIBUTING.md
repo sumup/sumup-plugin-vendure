@@ -93,6 +93,8 @@ Release Please prepares the version and changelog through `release-please-config
 
 Release Please owns the formatting of `CHANGELOG.md`. Biome skips formatting that file so generated release notes do not block publishing.
 
+npm publishing uses GitHub OIDC trusted publishing. In the npm settings for `@sumup/vendure-plugin`, configure the GitHub organization as `sumup`, the repository as `sumup-plugin-vendure`, and the workflow filename as `release.yml`. Allow direct publishing with `npm publish`. The workflow already grants `id-token: write`; no npm token secret is needed. GitHub Packages uses `GITHUB_TOKEN` separately.
+
 Before merging a release:
 1. Run `npm test` and `npm run check`.
 2. Check that the declared Vendure compatibility matches the peer dependency.
