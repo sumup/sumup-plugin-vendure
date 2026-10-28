@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/sumup/sumup-plugin-vendure/compare/v0.3.0...v0.3.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* formatting of changelog ([974fa5a](https://github.com/sumup/sumup-plugin-vendure/commit/974fa5acbe81c09a7490effb19038d271c909636))
+
 ## [0.3.0](https://github.com/sumup/sumup-plugin-vendure/compare/v0.2.0...v0.3.0) (2026-10-28)
 
 ### Features
