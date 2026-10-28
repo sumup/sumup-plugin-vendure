@@ -1,110 +1,101 @@
 # Contributing
 
-This repository contains the source for `@sumup/vendure-plugin`.
+This repository contains the source for `@sumup/vendure-plugin`. Keep setup and storefront guidance in [README.md](./README.md). Development and implementation notes belong here.
 
-`README.md` is for plugin users. Maintainer workflow, local development, and release notes belong here.
-
-## Project layout
+## Project Layout
 
 - `src/`: plugin source
-- `dist/`: build output published to npm
-- `examples/docker/`: local Vendure + storefront playground wired to the plugin from source
-- `.github/workflows/`: CI and release automation
+- `test/`: unit and integration tests
+- `dist/`: generated JavaScript and types published with the package
+- `examples/docker/`: a Vendure server and storefront that use the local plugin
+- `.github/workflows/`: CI and release workflows
 
-## Local development
+Edit files in `src/` and rebuild to update `dist/`. Do not edit generated files.
 
-Install dependencies:
+## Development
+
+Install the locked dependencies:
 
 ```bash
-npm install
+npm ci
 ```
 
-Run the standard checks:
+Run tests and package checks before committing:
 
 ```bash
-npm run format
-npm run lint
-npm run typecheck
-npm run build
 npm test
-```
-
-Run the full pre-publish verification:
-
-```bash
 npm run check
 ```
 
-That command runs linting, type-checking, build, and `npm pack --dry-run`.
+`npm test` builds the plugin and runs all tests. `npm run check` runs lint, typecheck, build, and `npm pack --dry-run`. Use `npm run format` to format the code.
 
-## Local integration testing
+## Tests
 
-The Docker example is the fastest way to validate real Vendure behavior:
+Unit tests cover amount conversion, checkout payloads, status mapping, and payment updates.
+
+The integration suite starts a local Vendure server with an in-memory SQL.js database. It uses the built plugin because Nest needs the decorator metadata emitted by TypeScript. Vendure's services and state machines run normally; only SumUp HTTP responses are stubbed.
+
+The suite covers pending checkout creation, the amount sent to SumUp, rejection of settlement before payment, and paid, failed, expired, and repeated callbacks. It calls `OrderService.addPaymentToOrder` directly and sends callbacks to the plugin's HTTP endpoint. It does not run a browser checkout or contact SumUp.
+
+To test with a real SumUp account, use the [Docker example](./examples/docker/README.md):
 
 ```bash
 cd examples/docker
 cp example.env .env
-# set SUMUP_API_KEY and SUMUP_MERCHANT_CODE
+# Set SUMUP_API_KEY and SUMUP_MERCHANT_CODE in .env.
 docker compose up --build
 ```
 
-The example app:
+The example builds the local plugin, creates a payment method and demo product, and serves a small storefront. Expose the backend through a public URL to receive SumUp callbacks. See the example README for the settings.
 
-- builds the plugin from the local source tree
-- seeds a `sumup` payment method
-- exposes a minimal storefront for Hosted Checkout and widget-mode experiments
+## Payment Flow
 
-See [`examples/docker/README.md`](examples/docker/README.md) for the exact flow and webhook notes.
+The payment handler creates a SumUp checkout when Vendure calls `addPaymentToOrder`. It converts Vendure's minor units to SumUp's major units: an amount of `1295` becomes `12.95`.
 
-## Documentation rules
+Vendure saves each new payment as `Created`, then transitions it to the state returned by the handler. Returning `Created` would require a `Created → Created` transition, which Vendure's default process does not allow.
 
-- Keep `README.md` focused on installation, configuration, storefront integration, and user-visible behavior.
-- Put maintainer-only notes, test procedures, and release workflow here.
-- When the public API changes, update both `README.md` and JSDoc comments in `src/`.
+The plugin appends `sumUpPaymentProcess` to the configured payment processes. It adds `Created → SumUpPending` and allows `SumUpPending` to transition to `Settled`, `Declined`, `Cancelled`, or `Error`. Existing payment processes remain configured. Pending payments do not count as authorized or settled, so the order stays in `ArrangingPayment`.
 
-## Vendure publishing checklist
+Checkout states map to payment states as follows:
 
-This package is intended to be publishable as a Vendure plugin and align with Vendure's published guidance.
+| SumUp checkout state | Vendure payment state |
+| --- | --- |
+| `PAID` or a successful transaction | `Settled` |
+| `FAILED` | `Declined` |
+| `EXPIRED` | `Cancelled` |
+| `PENDING` or an unknown state | `SumUpPending` |
 
-Before release, verify:
+The settlement handler fetches the checkout from SumUp and confirms payment before allowing settlement.
 
-- the plugin metadata still declares `compatibility` and that it matches supported Vendure versions
-- `@vendure/core` remains a peer dependency rather than a runtime dependency
-- `README.md` fully documents installation and usage
-- exported public APIs keep useful JSDoc comments for Vendure Hub doc generation
-- `CHANGELOG.md` is updated for the release
-- `npm run check` passes
-- `npm pack --dry-run` contains the expected publish artifacts only
+### Callbacks
 
-Current publish artifacts are controlled by `package.json#files`:
+The plugin receives callbacks at `POST /payments/sumup/webhook`. It uses the checkout ID to find the stored payment, fetches the checkout from SumUp, and applies the current status. The callback body is a notification, not proof of payment. Repeated callbacks for the same status do not repeat the payment transition.
 
-- `dist`
-- `README.md`
-- `CHANGELOG.md`
-- `LICENSE`
+The payment stores the checkout ID, reference, merchant code, and checkout response. The Shop API exposes only the fields under `metadata.public`; see the README for those fields.
 
-## Release flow
+### Custom API Clients
 
-Release automation is configured with `release-please`:
+`SumUpPlugin.init()` accepts an optional `client` that implements the exported `SumUpClient` type. Use it to replace the SumUp API client in tests or other server integrations. The interface is defined in [src/types.ts](./src/types.ts).
 
-- `release-please-config.json`
-- `.release-please-manifest.json`
-- `.github/workflows/release-pr.yml`
-- `.github/workflows/release.yml`
+### Recovery Limits
 
-When preparing a release:
+Creating a SumUp checkout and saving a Vendure payment are separate operations. If the checkout succeeds but the database write fails, the plugin does not recover the orphaned checkout automatically. Reusing its reference can cause a duplicate checkout error. Check the existing checkout before starting a replacement, and give the replacement a new reference.
 
-1. Merge the release PR that updates the version and changelog.
-2. Confirm CI passes on the release commit.
-3. Let the release workflow publish the package.
-4. Verify the published tarball metadata on npm.
+## Documentation
 
-## Notes on SumUp callback behavior
+- Keep the README focused on installation, configuration, storefront usage, and payment outcomes.
+- Put implementation details, test instructions, and release steps here.
+- Update public API comments and user documentation when behavior changes.
 
-The plugin exposes a fixed callback endpoint at:
+## Releases
 
-```text
-/payments/sumup/webhook
-```
+Release Please prepares the version and changelog through `release-please-config.json`, `.release-please-manifest.json`, and `.github/workflows/release-pr.yml`. Publishing a GitHub release starts `.github/workflows/release.yml`.
 
-`returnUrl` should normally point to that route on a publicly reachable Vendure server. The callback is treated as a notification signal only; the plugin always re-fetches the checkout from SumUp before changing Vendure payment state.
+Before merging a release:
+
+1. Run `npm test` and `npm run check`.
+2. Check that the declared Vendure compatibility matches the peer dependency.
+3. Check that `package.json` points to `sumup/sumup-plugin-vendure`. npm provenance requires the repository URL to match the publishing repository.
+4. Review the package contents from `npm pack --dry-run`. They should contain the build output, README, changelog, license, and package metadata.
+
+After publishing, confirm the release workflow succeeded and verify the version and tarball on npm. A GitHub release alone does not mean the package was published. The workflow publishes to GitHub Packages after npm succeeds.

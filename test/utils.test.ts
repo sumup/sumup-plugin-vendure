@@ -51,9 +51,9 @@ describe("buildCheckoutPayload", () => {
 })
 
 describe("mapCheckoutToPaymentState", () => {
-  it("keeps unpaid pending checkouts in Created state", () => {
+  it("keeps unpaid pending checkouts in SumUpPending state", () => {
     expect(mapCheckoutToPaymentState(checkoutWithStatus("PENDING"))).toBe(
-      "Created"
+      "SumUpPending"
     )
   })
 

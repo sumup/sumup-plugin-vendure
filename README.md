@@ -11,24 +11,9 @@
 
 </div>
 
-[SumUp payment plugin](https://docs.vendure.io/plugins/sumup) for [Vendure](https://vendure.io/).
+Accept payments in [Vendure](https://vendure.io/) with SumUp Hosted Checkout or the SumUp Payment Widget.
 
-It creates SumUp checkouts from Vendure's `PaymentMethodHandler` flow and supports both:
-
-- SumUp Hosted Checkout redirects
-- widget-oriented storefront integrations that use a returned `checkoutId`
-
-The plugin never handles raw card data inside your Vendure server.
-
-Compatible with Vendure `^3.6.4`.
-
-## What It Provides
-
-- a Vendure plugin: `SumUpPlugin`
-- a payment handler: `sumUpPaymentHandler`
-- a webhook/callback controller at `POST /payments/sumup/webhook`
-
-The webhook endpoint is notification-only. When SumUp calls it, the plugin re-fetches the checkout from SumUp and updates the matching Vendure payment from the checkout state.
+Requires Node.js 20 or later and Vendure `^3.6.4`. Keep your SumUp API key on the server. SumUp collects the shopper's payment details.
 
 ## Installation
 
@@ -38,7 +23,7 @@ npm install @sumup/vendure-plugin
 
 ## Vendure Configuration
 
-Register the plugin and payment handler in your Vendure config:
+Register the plugin and payment handler:
 
 ```ts
 import { VendureConfig } from "@vendure/core"
@@ -62,46 +47,34 @@ export const config: VendureConfig = {
 }
 ```
 
-`returnUrl` should be a publicly reachable URL that SumUp can call with checkout status updates. In most setups that should be your Vendure server's `/payments/sumup/webhook` route.
+Set `returnUrl` to your Vendure server's public `/payments/sumup/webhook` URL so SumUp can send payment updates. Set `redirectUrl` to the storefront page the shopper should return to after checkout.
 
 ## Create the Payment Method
 
-Create a Payment Method in the Vendure Admin UI:
+Create and enable a payment method in the Vendure Admin UI:
 
 - `Code`: `sumup`
 - `Handler`: `sumup`
 
-Optional handler arguments:
+You can override `merchantCode`, `checkoutMode`, `returnUrl`, `redirectUrl`, and `paymentDescription` in the payment method's handler arguments. Otherwise, the values from `SumUpPlugin.init()` apply.
 
-- `merchantCode`
-- `checkoutMode`
-- `returnUrl`
-- `redirectUrl`
-- `paymentDescription`
+## Create a Checkout
 
-Global defaults can be defined in `SumUpPlugin.init()` and overridden per payment method when needed.
-
-## Usage
-
-### Storefront Flow
-
-Once the order is in `ArrangingPayment`, call `addPaymentToOrder` with `method: "sumup"` and any SumUp-specific metadata you need.
+Once the order is in `ArrangingPayment`, call `addPaymentToOrder` with `method: "sumup"`:
 
 ```graphql
 mutation AddPaymentToOrder {
   addPaymentToOrder(
     input: {
       method: "sumup"
-      metadata: {
-        checkout_mode: "hosted"
-        checkout_reference: "ORDER-1001"
-      }
+      metadata: { checkout_mode: "hosted" }
     }
   ) {
     ... on Order {
       id
       state
       payments {
+        state
         transactionId
         metadata
       }
@@ -114,11 +87,13 @@ mutation AddPaymentToOrder {
 }
 ```
 
-The plugin stores SumUp data on the Vendure payment and exposes a safe subset through `payments[].metadata.public`.
+The response includes the checkout details in `payments[].metadata.public`.
+
+You can pass an empty `metadata` object to use the configured checkout mode. To supply your own checkout reference, set `metadata.checkout_reference`; otherwise, the plugin uses the order code. Use a new reference when creating a replacement checkout.
 
 ### Hosted Checkout
 
-Use `checkout_mode: "hosted"` or set `checkoutMode: "hosted"` in plugin/payment-method config.
+Hosted Checkout is the default. You can also select it with `metadata.checkout_mode: "hosted"`.
 
 After `addPaymentToOrder`, redirect the shopper to:
 
@@ -126,9 +101,9 @@ After `addPaymentToOrder`, redirect the shopper to:
 payments[].metadata.public.hostedCheckoutUrl
 ```
 
-### Widget-Oriented Flow
+### Payment Widget
 
-Use `checkout_mode: "widget"` if your storefront will mount SumUp's checkout UI itself.
+Set `checkoutMode: "widget"` in your configuration or pass `metadata.checkout_mode: "widget"` when creating the payment.
 
 After `addPaymentToOrder`, read:
 
@@ -136,7 +111,22 @@ After `addPaymentToOrder`, read:
 payments[].metadata.public.checkoutId
 ```
 
-Use that `checkoutId` in your storefront's SumUp client integration. The plugin still treats the webhook callback or a later checkout lookup as the source of truth for final payment state.
+Use that `checkoutId` to mount the SumUp Payment Widget in your storefront.
+
+## Payment Status
+
+Creating a checkout leaves the payment in `SumUpPending` and the order in `ArrangingPayment`. The order stays unpaid while the shopper completes checkout.
+
+When SumUp sends an update, the plugin checks the checkout status with SumUp and updates the payment:
+
+| Checkout result | Vendure payment state |
+| --- | --- |
+| Paid | `Settled` |
+| Failed | `Declined` |
+| Expired | `Cancelled` |
+| Awaiting payment | `SumUpPending` |
+
+A fully paid order moves to `PaymentSettled`. Confirm the order's payment status before fulfilling it. Returning to `redirectUrl` or receiving a widget success event alone does not confirm payment.
 
 ## Public Payment Metadata
 
@@ -163,25 +153,8 @@ The plugin exposes these fields in `payments[].metadata.public`:
 | `paymentDescription` | No | Default SumUp checkout description. |
 | `timeout` | No | SumUp SDK request timeout in milliseconds. |
 | `maxRetries` | No | SumUp SDK retry count. |
-| `supportedCurrencies` | No | Override the built-in supported currency allowlist. |
-| `client` | No | Inject a custom SumUp client implementation. Useful for tests. |
+| `supportedCurrencies` | No | Override the list of accepted currencies. The currency must also be supported by your SumUp merchant account. |
 
-## Payment State Mapping
+## Contributing
 
-The plugin maps SumUp checkout state to Vendure payment state like this:
-
-- successful transaction or `PAID` checkout -> `Settled`
-- `PENDING` -> `Authorized`
-- `FAILED` -> `Declined`
-- `EXPIRED` -> `Cancelled`
-- anything else -> `Created`
-
-## Integration Notes
-
-- The plugin does not add Admin UI extensions.
-- The plugin does not extend Vendure's GraphQL schema. It uses the standard `addPaymentToOrder` payment metadata flow described in Vendure's payment docs.
-
-## Notes
-
-- For local end-to-end testing, see [`examples/docker`](examples/docker).
-- For contributor workflow, release checks, and publishing notes, see [`CONTRIBUTING.md`](./CONTRIBUTING.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for local development, tests, custom API clients, and releases.

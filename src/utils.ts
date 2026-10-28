@@ -244,19 +244,19 @@ export function mergeStoredMetadata(
 
 export function mapCheckoutToPaymentState(
   checkout: Checkout | CheckoutSuccess
-): "Created" | "Authorized" | "Settled" | "Declined" | "Cancelled" {
+): "SumUpPending" | "Settled" | "Declined" | "Cancelled" {
   if (getSuccessfulTransaction(checkout) || checkout.status === "PAID") {
     return "Settled"
   }
   switch (checkout.status) {
     case "PENDING":
-      return "Created"
+      return "SumUpPending"
     case "FAILED":
       return "Declined"
     case "EXPIRED":
       return "Cancelled"
     default:
-      return "Created"
+      return "SumUpPending"
   }
 }
 

@@ -10,7 +10,7 @@ function createService(input: {
 }) {
   const payment = {
     id: "payment-1",
-    state: input.paymentState ?? "Created",
+    state: input.paymentState ?? "SumUpPending",
     transactionId: "checkout-1",
     metadata: {
       checkout_id: "checkout-1",

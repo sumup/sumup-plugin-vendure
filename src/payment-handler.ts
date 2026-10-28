@@ -5,6 +5,7 @@ import {
   Injector,
   LanguageCode,
   PaymentMethodHandler,
+  type SettlePaymentErrorResult,
   type SettlePaymentResult,
 } from "@vendure/core"
 
@@ -101,8 +102,27 @@ export function createSumUpPaymentHandler() {
         },
       }
     },
-    settlePayment: async (): Promise<SettlePaymentResult> => {
-      return { success: true }
+    settlePayment: async (
+      _ctx,
+      _order,
+      payment
+    ): Promise<SettlePaymentResult | SettlePaymentErrorResult> => {
+      const checkout = await sumUpService
+        .getClient()
+        .retrieveCheckout(payment.transactionId)
+      if (mapCheckoutToPaymentState(checkout) !== "Settled") {
+        return {
+          success: false,
+          state: payment.state === "Settled" ? undefined : payment.state,
+          errorMessage: "SumUp checkout has not been paid.",
+        }
+      }
+      const metadata = mergeStoredMetadata(payment.metadata ?? {}, checkout)
+      payment.errorMessage = ""
+      return {
+        success: true,
+        metadata: { ...metadata, public: toPublicMetadata(metadata) },
+      }
     },
     cancelPayment: async (
       _ctx,

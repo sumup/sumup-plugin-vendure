@@ -5,6 +5,7 @@ import {
   createSumUpPaymentHandler,
   setActiveSumUpOptions,
 } from "./payment-handler"
+import { sumUpPaymentProcess } from "./payment-process"
 import { SumUpController } from "./sumup.controller"
 import { SumUpService } from "./sumup.service"
 import type { SumUpPluginOptions } from "./types"
@@ -28,7 +29,13 @@ import { assertRequiredOptions } from "./utils"
       useFactory: () => SumUpPlugin.options,
     },
   ],
-  configuration: (config) => config,
+  configuration: (config) => {
+    config.paymentOptions.process = [
+      ...(config.paymentOptions.process ?? []),
+      sumUpPaymentProcess,
+    ]
+    return config
+  },
   compatibility: "^3.6.4",
 })
 // biome-ignore lint/complexity/noStaticOnlyClass: Vendure plugins expose configuration through a static init() API.

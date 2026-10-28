@@ -5,14 +5,13 @@
   "author": "SumUp <support@sumup.com> (https://sumup.com/)",
   "license": "Apache-2.0",
   "type": "commonjs",
-  "homepage": "https://github.com/sumup/sumup/tree/main/sumup-plugin-vendure",
+  "homepage": "https://github.com/sumup/sumup-plugin-vendure",
   "bugs": {
-    "url": "https://github.com/sumup/sumup/issues"
+    "url": "https://github.com/sumup/sumup-plugin-vendure/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sumup/sumup.git",
-    "directory": "sumup-plugin-vendure"
+    "url": "git+https://github.com/sumup/sumup-plugin-vendure.git"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -54,7 +53,7 @@
     "pack:dry-run": "npm pack --dry-run",
     "prepublishOnly": "npm run check",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run --passWithNoTests"
+    "test": "npm run build && vitest run --passWithNoTests"
   },
   "dependencies": {
     "@sumup/sdk": "0.2.1"
@@ -67,6 +66,8 @@
     "@types/express": "5.0.6",
     "@types/node": "26.2.0",
     "@vendure/core": "3.7.2",
+    "@vendure/testing": "3.7.2",
+    "sql.js": "1.14.1",
     "typescript": "7.0.2",
     "vitest": "4.1.11"
   }
