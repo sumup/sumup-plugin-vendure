@@ -52,7 +52,6 @@ Set `returnUrl` to your Vendure server's public `/payments/sumup/webhook` URL so
 ## Create the Payment Method
 
 Create and enable a payment method in the Vendure Admin UI:
-
 - `Code`: `sumup`
 - `Handler`: `sumup`
 
@@ -65,10 +64,7 @@ Once the order is in `ArrangingPayment`, call `addPaymentToOrder` with `method: 
 ```graphql
 mutation AddPaymentToOrder {
   addPaymentToOrder(
-    input: {
-      method: "sumup"
-      metadata: { checkout_mode: "hosted" }
-    }
+    input: { method: "sumup", metadata: { checkout_mode: "hosted" } }
   ) {
     ... on Order {
       id
@@ -119,12 +115,12 @@ Creating a checkout leaves the payment in `SumUpPending` and the order in `Arran
 
 When SumUp sends an update, the plugin checks the checkout status with SumUp and updates the payment:
 
-| Checkout result | Vendure payment state |
-| --- | --- |
-| Paid | `Settled` |
-| Failed | `Declined` |
-| Expired | `Cancelled` |
-| Awaiting payment | `SumUpPending` |
+| Checkout result  | Vendure payment state |
+| ---------------- | --------------------- |
+| Paid             | `Settled`             |
+| Failed           | `Declined`            |
+| Expired          | `Cancelled`           |
+| Awaiting payment | `SumUpPending`        |
 
 A fully paid order moves to `PaymentSettled`. Confirm the order's payment status before fulfilling it. Returning to `redirectUrl` or receiving a widget success event alone does not confirm payment.
 
@@ -132,28 +128,28 @@ A fully paid order moves to `PaymentSettled`. Confirm the order's payment status
 
 The plugin exposes these fields in `payments[].metadata.public`:
 
-| Field | Description |
-| --- | --- |
-| `checkoutId` | SumUp checkout id |
-| `checkoutReference` | Merchant checkout reference sent to SumUp |
-| `checkoutMode` | `hosted` or `widget` |
+| Field               | Description                                |
+| ------------------- | ------------------------------------------ |
+| `checkoutId`        | SumUp checkout id                          |
+| `checkoutReference` | Merchant checkout reference sent to SumUp  |
+| `checkoutMode`      | `hosted` or `widget`                       |
 | `hostedCheckoutUrl` | Hosted Checkout URL when SumUp returns one |
-| `redirectUrl` | Redirect URL associated with the checkout |
+| `redirectUrl`       | Redirect URL associated with the checkout  |
 
 ## Configuration Options
 
-| Option | Required | Description |
-| --- | --- | --- |
-| `apiKey` | Yes | SumUp API key or access token. Keep it server-side. |
-| `merchantCode` | Yes | SumUp merchant code that receives the payment. |
-| `defaultLanguageCode` | No | Language used for the handler description shown in Vendure. |
-| `checkoutMode` | No | Default checkout mode: `hosted` or `widget`. Defaults to `hosted`. |
-| `returnUrl` | No | Backend callback URL used by SumUp for checkout status updates. |
-| `redirectUrl` | No | URL the shopper is sent to after redirect-based payment flows. |
-| `paymentDescription` | No | Default SumUp checkout description. |
-| `timeout` | No | SumUp SDK request timeout in milliseconds. |
-| `maxRetries` | No | SumUp SDK retry count. |
-| `supportedCurrencies` | No | Override the list of accepted currencies. The currency must also be supported by your SumUp merchant account. |
+| Option                | Required | Description                                                                                                   |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------- |
+| `apiKey`              | Yes      | SumUp API key or access token. Keep it server-side.                                                           |
+| `merchantCode`        | Yes      | SumUp merchant code that receives the payment.                                                                |
+| `defaultLanguageCode` | No       | Language used for the handler description shown in Vendure.                                                   |
+| `checkoutMode`        | No       | Default checkout mode: `hosted` or `widget`. Defaults to `hosted`.                                            |
+| `returnUrl`           | No       | Backend callback URL used by SumUp for checkout status updates.                                               |
+| `redirectUrl`         | No       | URL the shopper is sent to after redirect-based payment flows.                                                |
+| `paymentDescription`  | No       | Default SumUp checkout description.                                                                           |
+| `timeout`             | No       | SumUp SDK request timeout in milliseconds.                                                                    |
+| `maxRetries`          | No       | SumUp SDK retry count.                                                                                        |
+| `supportedCurrencies` | No       | Override the list of accepted currencies. The currency must also be supported by your SumUp merchant account. |
 
 ## Contributing
 

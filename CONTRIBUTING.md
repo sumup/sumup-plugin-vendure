@@ -58,12 +58,12 @@ The plugin appends `sumUpPaymentProcess` to the configured payment processes. It
 
 Checkout states map to payment states as follows:
 
-| SumUp checkout state | Vendure payment state |
-| --- | --- |
-| `PAID` or a successful transaction | `Settled` |
-| `FAILED` | `Declined` |
-| `EXPIRED` | `Cancelled` |
-| `PENDING` or an unknown state | `SumUpPending` |
+| SumUp checkout state               | Vendure payment state |
+| ---------------------------------- | --------------------- |
+| `PAID` or a successful transaction | `Settled`             |
+| `FAILED`                           | `Declined`            |
+| `EXPIRED`                          | `Cancelled`           |
+| `PENDING` or an unknown state      | `SumUpPending`        |
 
 The settlement handler fetches the checkout from SumUp and confirms payment before allowing settlement.
 
@@ -92,7 +92,6 @@ Creating a SumUp checkout and saving a Vendure payment are separate operations. 
 Release Please prepares the version and changelog through `release-please-config.json`, `.release-please-manifest.json`, and `.github/workflows/release-pr.yml`. Publishing a GitHub release starts `.github/workflows/release.yml`.
 
 Before merging a release:
-
 1. Run `npm test` and `npm run check`.
 2. Check that the declared Vendure compatibility matches the peer dependency.
 3. Check that `package.json` points to `sumup/sumup-plugin-vendure`. npm provenance requires the repository URL to match the publishing repository.
