@@ -7,6 +7,14 @@
     "enabled": true,
     "indentStyle": "space"
   },
+  "overrides": [
+    {
+      "includes": ["CHANGELOG.md"],
+      "formatter": {
+        "enabled": false
+      }
+    }
+  ],
   "linter": {
     "enabled": true,
     "rules": {

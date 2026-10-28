@@ -91,6 +91,8 @@ Creating a SumUp checkout and saving a Vendure payment are separate operations. 
 
 Release Please prepares the version and changelog through `release-please-config.json`, `.release-please-manifest.json`, and `.github/workflows/release-pr.yml`. Publishing a GitHub release starts `.github/workflows/release.yml`.
 
+Release Please owns the formatting of `CHANGELOG.md`. Biome skips formatting that file so generated release notes do not block publishing.
+
 Before merging a release:
 1. Run `npm test` and `npm run check`.
 2. Check that the declared Vendure compatibility matches the peer dependency.
