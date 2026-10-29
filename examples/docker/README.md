@@ -71,5 +71,6 @@ That URL is not publicly reachable from SumUp. To test webhook delivery, expose 
 
 ## Notes
 
+- The example uses TypeScript 6 because `ts-node` needs the compiler API that [TypeScript 7 does not provide](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0-rc/).
 - Keep `VENDURE_PUBLIC_URL` on `127.0.0.1` if you want the storefront and Admin UI to use separate auth cookies in the browser.
 - If port `8080` is already in use, change `STOREFRONT_PORT` and `STOREFRONT_URL` together.

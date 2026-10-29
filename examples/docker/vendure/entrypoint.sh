@@ -9,8 +9,5 @@ else
   echo "[entrypoint] Demo data already seeded."
 fi
 
-echo "[entrypoint] Syncing demo data..."
-npm run sync-demo
-
 echo "[entrypoint] Starting Vendure..."
 exec npm run start

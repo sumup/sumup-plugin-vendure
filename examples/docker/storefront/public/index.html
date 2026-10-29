@@ -400,24 +400,36 @@
         return
       }
 
-      const data = await gql(
-        `${config.backendUrl}/shop-api`,
-        `query OrderByCode($code: String!) {
+      const apiUrl = `${config.backendUrl}/shop-api`
+      const {activeOrder} = await gql(
+        apiUrl,
+        `query ActiveOrder {
+            activeOrder {
+              code
+              state
+            }
+          }`
+      )
+      let order = activeOrder?.code === code ? activeOrder : undefined
+
+      // Pending checkouts are still active; orderByCode requires a placed order.
+      if (!order) {
+        const data = await gql(
+          apiUrl,
+          `query OrderByCode($code: String!) {
             orderByCode(code: $code) {
               code
               state
-              payments {
-                state
-                transactionId
-              }
             }
           }`,
-        {code}
-      )
+          {code}
+        )
+        order = data.orderByCode
+      }
 
-      log("Loaded order", data.orderByCode)
+      log("Loaded order", order)
       document.getElementById("return-result").textContent =
-        `Order ${data.orderByCode?.code || code} is currently ${data.orderByCode?.state || "unknown"}.`
+        `Order ${order?.code || code} is currently ${order?.state || "unknown"}.`
     }
 
     function formatMoney(amount, currencyCode) {

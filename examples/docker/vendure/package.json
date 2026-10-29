@@ -5,17 +5,17 @@
   "description": "Local Vendure app for testing @sumup/vendure-plugin from source.",
   "scripts": {
     "seed": "ts-node --project tsconfig.json src/seed.ts",
-    "sync-demo": "ts-node --project tsconfig.json src/sync-demo.ts",
     "start": "ts-node --project tsconfig.json src/index.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@nestjs/graphql": "14.0.3",
     "@sumup/sdk": "0.2.1",
     "@vendure/admin-ui-plugin": "3.8.0",
     "@vendure/core": "3.8.0",
     "pg": "8.23.1",
     "reflect-metadata": "0.2.2",
     "ts-node": "10.9.2",
-    "typescript": "7.0.2"
+    "typescript": "6.0.3"
   }
 }
