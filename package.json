@@ -1,6 +1,6 @@
 {
   "name": "@sumup/vendure-plugin",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "SumUp payment plugin for Vendure.",
   "author": "SumUp <support@sumup.com> (https://sumup.com/)",
   "license": "Apache-2.0",

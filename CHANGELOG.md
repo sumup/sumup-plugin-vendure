@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/sumup/sumup-plugin-vendure/compare/v0.3.1...v0.4.0) (2026-10-29)
+
+
+### Features
+
+* trusted publishing ([23da1a0](https://github.com/sumup/sumup-plugin-vendure/commit/23da1a03694a2ae6ddda8af5dee3342f75ef3848))
+* update example/testing setup ([d723f5b](https://github.com/sumup/sumup-plugin-vendure/commit/d723f5b7ee23503c54c5e6854b410dc9b5436639))
+
 ## [0.3.1](https://github.com/sumup/sumup-plugin-vendure/compare/v0.3.0...v0.3.1) (2026-10-28)
 
 
