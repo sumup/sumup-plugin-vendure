@@ -69,6 +69,6 @@
     "@vendure/testing": "3.7.2",
     "sql.js": "1.14.1",
     "typescript": "7.0.2",
-    "vitest": "4.1.11"
+    "vitest": "5.0.5"
   }
 }
